@@ -1,19 +1,35 @@
 import { Hono } from 'hono'
+import { logger } from 'hono/logger';
+import {cors} from'hono/cors';
 
 const app = new Hono()
 
-app.get('/', (c) => {
-  console.log(c.req.query("Hello Hono!"));
+app.use(logger()); // Enable logger middleware
 
-const text = c.req.query('text')
+app.get("/status", (c) => {
+  return c.json({ status: "API is Active" });
+});
 
-  if (!text) {
-    c.status(400);
-    return c.json ({error: "Field text is required"});
-  }
-  const length = text.split(/\.s/).length;
-return c.json({length})
+app.get("/", (c) => {
+   const text = c.req.query('text')
+if (!text) {
+  return c.json({ message: "Please provide a text" }, 400);
+}
 
-})
+return c.json(text);
+}); 
+// app.get('/', (c) => {
+//   console.log(c.req.query("Hello Hono!"));
 
-export default app
+// const text = c.req.query('text')
+
+//   if (!text) {
+//     c.status(400);
+//     return c.json ({error: "Field text is required"});
+//   }
+//   const length = text.split(/\.s/).length;
+// return c.json({length})
+
+// })
+
+export default app;
