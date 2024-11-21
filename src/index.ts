@@ -1,35 +1,58 @@
-import { Hono } from 'hono'
-import { logger } from 'hono/logger';
-import {cors} from'hono/cors';
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+import { cors } from "hono/cors";
 
-const app = new Hono()
+const app = new Hono();
 
-app.use(logger()); // Enable logger middleware
+// Middlewares
+app.use(logger()); // Enable logger
+app.use(cors());
 
+const defaultWPM = 238;
+
+function calculateSpeed(
+  text: string,
+  wpm: number
+): { wpm: number; seconds: number; minutes: number; wordsCount: number } {
+  const wordsCount = text.trim().split(/\s+/).length;
+  const seconds: number = (wordsCount / wpm) * 60;
+  const minutes: number = seconds / 60;
+  return {
+    wpm,
+    seconds: Number(seconds.toFixed(2)),
+    minutes: Number(minutes.toFixed(2)),
+    wordsCount,
+  };
+}
+
+// MARK: Routes
 app.get("/status", (c) => {
-  return c.json({ status: "API is Active" });
+  return c.json({ message: "API is active 🔥" });
 });
 
 app.get("/", (c) => {
-   const text = c.req.query('text')
-if (!text) {
-  return c.json({ message: "Please provide a text" }, 400);
-}
+  const text = c.req.query("text");
+  const wpm = c.req.query("wpm");
 
-return c.json(text);
-}); 
-// app.get('/', (c) => {
-//   console.log(c.req.query("Hello Hono!"));
+  if (!text) {
+    return c.json({ message: "Please provide text" }, 400);
+  }
 
-// const text = c.req.query('text')
+  const result = calculateSpeed(text, wpm ? Number(wpm) : defaultWPM);
 
-//   if (!text) {
-//     c.status(400);
-//     return c.json ({error: "Field text is required"});
-//   }
-//   const length = text.split(/\.s/).length;
-// return c.json({length})
+  return c.json(result);
+});
 
-// })
+app.post("/", async (c) => {
+  const { text, wpm } = await c.req.json();
 
-export default app;
+  if (!text) {
+    return c.json({ message: "Please provide text" }, 400);
+  }
+
+  const result = calculateSpeed(text, Number(wpm) || defaultWPM);
+
+  return c.json(result);
+});
+
+export default app;

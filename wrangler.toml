@@ -1,6 +1,6 @@
 name = "wakatii"
 main = "src/index.ts"
-compatibility_date = "2024-11-18"
+compatibility_date = "2024-11-21"
 
 # compatibility_flags = [ "nodejs_compat" ]
 
